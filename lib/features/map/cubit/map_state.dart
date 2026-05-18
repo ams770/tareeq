@@ -25,6 +25,8 @@ class MapLoaded extends MapState {
   final bool isSearching;
   final bool isRouting;
   final String? arrivalMessage;
+  final LatLng? selectedLongPressLatLng;
+  final bool isAutoCenteringDisabled;
 
   const MapLoaded({
     this.currentLocation,
@@ -36,6 +38,8 @@ class MapLoaded extends MapState {
     this.isSearching = false,
     this.isRouting = false,
     this.arrivalMessage,
+    this.selectedLongPressLatLng,
+    this.isAutoCenteringDisabled = false,
   });
 
   MapLoaded copyWith({
@@ -48,9 +52,12 @@ class MapLoaded extends MapState {
     bool? isSearching,
     bool? isRouting,
     String? arrivalMessage,
+    LatLng? selectedLongPressLatLng,
+    bool? isAutoCenteringDisabled,
     bool clearDestination = false,
     bool clearRouteInfo = false,
     bool clearArrivalMessage = false,
+    bool clearLongPressLatLng = false,
   }) {
     return MapLoaded(
       currentLocation: currentLocation ?? this.currentLocation,
@@ -62,6 +69,8 @@ class MapLoaded extends MapState {
       isSearching: isSearching ?? this.isSearching,
       isRouting: isRouting ?? this.isRouting,
       arrivalMessage: clearArrivalMessage ? null : (arrivalMessage ?? this.arrivalMessage),
+      selectedLongPressLatLng: clearLongPressLatLng ? null : (selectedLongPressLatLng ?? this.selectedLongPressLatLng),
+      isAutoCenteringDisabled: isAutoCenteringDisabled ?? this.isAutoCenteringDisabled,
     );
   }
 }

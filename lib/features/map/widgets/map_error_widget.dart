@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../../core/constants/app_strings.dart';
 import '../../../core/theme/app_colors.dart';
-import '../../../core/widgets/premium_card.dart';
 import '../cubit/map_cubit.dart';
 
 class MapErrorWidget extends StatelessWidget {
@@ -18,9 +17,10 @@ class MapErrorWidget extends StatelessWidget {
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 24.0),
       child: Center(
-        child: PremiumCard(
-          padding: const EdgeInsets.all(24.0),
-          child: Column(
+        child: Card(
+          child: Padding(
+            padding: const EdgeInsets.all(24.0),
+            child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
               const Icon(
@@ -68,6 +68,7 @@ class MapErrorWidget extends StatelessWidget {
           ),
         ),
       ),
-    );
-  }
+    ),
+  );
+}
 }

@@ -75,6 +75,22 @@ class AppTheme {
         isDense: true,
         contentPadding: EdgeInsets.symmetric(vertical: 12.0),
       ),
+
+      // Card Theme replicating PremiumCard style
+      cardTheme: CardThemeData(
+        color: AppColors.surface,
+        elevation: 6,
+        shadowColor: Colors.black.withValues(alpha: 0.06),
+        surfaceTintColor: Colors.transparent,
+        margin: EdgeInsets.zero,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(16.0),
+          side: const BorderSide(
+            color: AppColors.cardBorder,
+            width: 1.0,
+          ),
+        ),
+      ),
     );
   }
 

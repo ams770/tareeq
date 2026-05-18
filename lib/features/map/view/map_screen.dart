@@ -1,12 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:google_maps_flutter/google_maps_flutter.dart';
-import 'package:lottie/lottie.dart';
 import '../../../core/constants/app_strings.dart';
 import '../../../core/constants/app_sizes.dart';
-import '../../../core/constants/assets_manager.dart';
 import '../../../core/theme/app_colors.dart';
-import '../../../core/widgets/premium_card.dart';
 import '../cubit/map_cubit.dart';
 import '../cubit/map_state.dart';
 import '../widgets/map_error_widget.dart';
@@ -17,24 +13,11 @@ import '../widgets/recenter_button.dart';
 import '../widgets/route_summary_hud.dart';
 import '../widgets/long_press_options_nav_bar.dart';
 import '../widgets/arrival_nav_bar.dart';
+import '../widgets/app_custom_map.dart';
+import '../widgets/route_calculation_loader.dart';
 
-class MapScreen extends StatefulWidget {
+class MapScreen extends StatelessWidget {
   const MapScreen({super.key});
-
-  @override
-  State<MapScreen> createState() => _MapScreenState();
-}
-
-class _MapScreenState extends State<MapScreen> {
-  LatLng? _selectedLongPressLatLng;
-
-  @override
-  void initState() {
-    super.initState();
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      context.read<MapCubit>().initializeMap();
-    });
-  }
 
   @override
   Widget build(BuildContext context) {
@@ -67,37 +50,16 @@ class _MapScreenState extends State<MapScreen> {
           }
 
           if (state is MapLoaded) {
-            final bool showBottomNav = (state.arrivalMessage != null || _selectedLongPressLatLng != null);
+            final bool showBottomNav = (state.arrivalMessage != null || state.selectedLongPressLatLng != null);
+            final double bottomSafeArea = MediaQuery.of(context).padding.bottom;
 
             return Stack(
               children: [
-                // 1. Full Screen Google Map
-                GoogleMap(
-                  initialCameraPosition: CameraPosition(
-                    target: state.currentLocation ?? const LatLng(0, 0),
-                    zoom: AppSizes.initialZoom,
-                    tilt: AppSizes.initialTilt,
-                  ),
-                  onMapCreated: (GoogleMapController controller) {
-                    context.read<MapCubit>().mapController = controller;
-                  },
-                  markers: state.markers,
-                  polylines: state.polylines,
-                  myLocationEnabled: false, // We use our custom styled cyan marker instead
-                  myLocationButtonEnabled: false,
-                  zoomControlsEnabled: false,
-                  compassEnabled: false,
-                  mapToolbarEnabled: false,
-                  buildingsEnabled: true, 
-                  onLongPress: (LatLng latLng) {
-                    setState(() {
-                      _selectedLongPressLatLng = latLng;
-                    });
-                  },
-                ),
+                // 1. Full Screen Google Map (extracted reusable component)
+                AppCustomMap(state: state),
 
                 // 2. Floating Search Field & Predictions List
-                if (state.routeInfo == null && _selectedLongPressLatLng == null && state.arrivalMessage == null)
+                if (state.routeInfo == null && state.selectedLongPressLatLng == null && state.arrivalMessage == null)
                   Positioned(
                     top: MediaQuery.of(context).padding.top + AppSizes.padding16,
                     left: AppSizes.padding16,
@@ -109,16 +71,18 @@ class _MapScreenState extends State<MapScreen> {
                   ),
 
                 // 3. Floating GPS Recenter Button (shifted dynamically if bottom nav is shown)
+                // Positioned within a safe area from the bottom plus vertical padding
                 Positioned(
-                  bottom: showBottomNav ? AppSizes.recenterShiftedBottom : AppSizes.recenterDefaultBottom,
+                  bottom: (showBottomNav ? AppSizes.recenterShiftedBottom : AppSizes.recenterDefaultBottom) + bottomSafeArea,
                   right: AppSizes.padding16,
                   child: const RecenterButton(),
                 ),
 
                 // 4. Floating Route Details HUD (Distance & Duration Summary)
+                // Positioned within a safe area from the bottom plus vertical padding
                 if (state.routeInfo != null && !showBottomNav)
                   Positioned(
-                    bottom: AppSizes.recenterDefaultBottom,
+                    bottom: AppSizes.recenterDefaultBottom + bottomSafeArea,
                     left: AppSizes.padding16,
                     right: AppSizes.padding88, // Offsets slightly to make space for recenter button
                     child: RouteSummaryHud(
@@ -127,35 +91,16 @@ class _MapScreenState extends State<MapScreen> {
                     ),
                   ),
 
-                // 5. Lottie Loader Overlay during route calculation
+                // 5. Lottie Loader Overlay during route calculation (extracted reusable component)
                 if (state.isRouting)
-                  Container(
-                    color: Colors.black.withOpacity(0.25),
-                    child: Center(
-                      child: PremiumCard(
-                        width: AppSizes.lottieContainerSize,
-                        height: AppSizes.lottieContainerSize,
-                        borderRadius: AppSizes.padding24,
-                        child: Center(
-                          child: Lottie.asset(
-                            AssetsManager.locationLoading,
-                            width: AppSizes.lottieIconSize,
-                            height: AppSizes.lottieIconSize,
-                            fit: BoxFit.contain,
-                          ),
-                        ),
-                      ),
-                    ),
-                  ),
+                  const RouteCalculationLoader(),
 
                 // 5.5 Darker Modal Barrier when bottom sheet is open
                 if (showBottomNav)
                   Positioned.fill(
                     child: GestureDetector(
                       onTap: () {
-                        setState(() {
-                          _selectedLongPressLatLng = null;
-                        });
+                        context.read<MapCubit>().clearLongPressLatLng();
                         if (state.arrivalMessage != null) {
                           context.read<MapCubit>().clearArrivalMessage();
                         }
@@ -167,23 +112,18 @@ class _MapScreenState extends State<MapScreen> {
                   ),
 
                 // 6. Long Press Options Bottom Navigation Bar
-                if (_selectedLongPressLatLng != null)
+                if (state.selectedLongPressLatLng != null)
                   Positioned(
                     left: 0,
                     right: 0,
                     bottom: 0,
                     child: LongPressOptionsNavBar(
-                      position: _selectedLongPressLatLng!,
+                      position: state.selectedLongPressLatLng!,
                       onCancel: () {
-                        setState(() {
-                          _selectedLongPressLatLng = null;
-                        });
+                        context.read<MapCubit>().clearLongPressLatLng();
                       },
                       onConfirm: () {
-                        final target = _selectedLongPressLatLng!;
-                        setState(() {
-                          _selectedLongPressLatLng = null;
-                        });
+                        final target = state.selectedLongPressLatLng!;
                         context.read<MapCubit>().selectLatLngDestination(target);
                       },
                     ),

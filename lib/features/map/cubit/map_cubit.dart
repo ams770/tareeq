@@ -240,7 +240,8 @@ class MapCubit extends Cubit<MapState> {
       _isFirstLocationEmit = false;
       _animateToLocation(userLocation.position, zoom: AppSizes.defaultUserZoom);
     } else if (currentState is MapLoaded &&
-        currentState.destinationLocation != null) {
+        currentState.destinationLocation != null &&
+        !currentState.isAutoCenteringDisabled) {
       // Keep centering camera on user in 3D perspective during navigation
       mapController?.animateCamera(
         CameraUpdate.newCameraPosition(
@@ -396,6 +397,7 @@ class MapCubit extends Cubit<MapState> {
           markers: {currentMarker, destMarker},
           polylines: {routePolyline},
           isRouting: false,
+          clearLongPressLatLng: true,
         ),
       );
 
@@ -421,6 +423,9 @@ class MapCubit extends Cubit<MapState> {
     final currentState = state;
     if (currentState is! MapLoaded) return;
 
+    // Reset auto centering state so map tracks location again
+    emit(currentState.copyWith(isAutoCenteringDisabled: false));
+
     if (currentState.currentLocation != null) {
       if (currentState.destinationLocation != null) {
         // acts like map navigation: tight zoom, 3D tilt perspective, aligned direction-facing bearing
@@ -438,6 +443,30 @@ class MapCubit extends Cubit<MapState> {
         // Normal flat overview recenter
         _animateToLocation(currentState.currentLocation!, zoom: AppSizes.defaultUserZoom);
       }
+    }
+  }
+
+  /// Disables auto-centering (e.g. if the user drags or zooms on map during routing).
+  void disableAutoCentering() {
+    final currentState = state;
+    if (currentState is MapLoaded && !currentState.isAutoCenteringDisabled) {
+      emit(currentState.copyWith(isAutoCenteringDisabled: true));
+    }
+  }
+
+  /// Sets the coordinates of a user's map long-press gesture.
+  void setLongPressLatLng(LatLng latLng) {
+    final currentState = state;
+    if (currentState is MapLoaded) {
+      emit(currentState.copyWith(selectedLongPressLatLng: latLng));
+    }
+  }
+
+  /// Clears the long-press coordinate state.
+  void clearLongPressLatLng() {
+    final currentState = state;
+    if (currentState is MapLoaded) {
+      emit(currentState.copyWith(clearLongPressLatLng: true));
     }
   }
 

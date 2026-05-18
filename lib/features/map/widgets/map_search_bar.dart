@@ -3,7 +3,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../../core/constants/app_strings.dart';
 import '../../../core/theme/app_colors.dart';
-import '../../../core/widgets/premium_card.dart';
 import '../cubit/map_cubit.dart';
 import '../cubit/map_state.dart';
 
@@ -59,10 +58,17 @@ class _MapSearchBarState extends State<MapSearchBar> {
         builder: (context, state) {
           final bool isSearching = state is MapLoaded && state.isSearching;
 
-          return PremiumCard(
-            borderRadius: 24.0,
-            padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 4.0),
-            child: Row(
+          return Card(
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(24.0),
+              side: const BorderSide(
+                color: AppColors.cardBorder,
+                width: 1.0,
+              ),
+            ),
+            child: Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 4.0),
+              child: Row(
               children: [
                 const Icon(
                   Icons.search_rounded,
@@ -111,8 +117,9 @@ class _MapSearchBarState extends State<MapSearchBar> {
                   ),
               ],
             ),
-          );
-        },
+          ),
+        );
+      },
       ),
     );
   }

@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../../core/theme/app_colors.dart';
-import '../../../core/widgets/premium_card.dart';
 import '../cubit/map_cubit.dart';
 import '../cubit/map_state.dart';
 
@@ -18,9 +17,15 @@ class PredictionsList extends StatelessWidget {
 
         final predictions = state.predictions;
 
-        return PremiumCard(
-          borderRadius: 20.0,
+        return Card(
           margin: const EdgeInsets.only(top: 8.0),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(20.0),
+            side: const BorderSide(
+              color: AppColors.cardBorder,
+              width: 1.0,
+            ),
+          ),
           child: ConstrainedBox(
             constraints: BoxConstraints(
               maxHeight: MediaQuery.of(context).size.height * 0.35,
@@ -39,7 +44,7 @@ class PredictionsList extends StatelessWidget {
                 final prediction = predictions[index];
                 return ListTile(
                   leading: CircleAvatar(
-                    backgroundColor: AppColors.primary.withOpacity(0.12),
+                    backgroundColor: AppColors.primary.withValues(alpha: 0.12),
                     radius: 18,
                     child: const Icon(
                       Icons.location_on_rounded,

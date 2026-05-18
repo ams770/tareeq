@@ -20,7 +20,7 @@ class TareeqApp extends StatelessWidget {
     ));
 
     return BlocProvider<MapCubit>(
-      create: (context) => sl<MapCubit>(),
+      create: (context) => sl<MapCubit>()..initializeMap(),
       child: MaterialApp(
         title: AppStrings.appTitle,
         debugShowCheckedModeBanner: false,

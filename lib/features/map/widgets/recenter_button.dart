@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../../core/constants/app_strings.dart';
 import '../../../core/theme/app_colors.dart';
-import '../../../core/widgets/premium_card.dart';
 import '../cubit/map_cubit.dart';
 import '../cubit/map_state.dart';
 
@@ -38,11 +37,19 @@ class RecenterButton extends StatelessWidget {
           backgroundColor: Colors.transparent,
           elevation: 0,
           highlightElevation: 0,
-          child: PremiumCard(
-            borderRadius: 30.0,
+          child: SizedBox(
             width: 56,
             height: 56,
-            child: Center(
+            child: Card(
+              margin: EdgeInsets.zero,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(30.0),
+                side: const BorderSide(
+                  color: AppColors.cardBorder,
+                  width: 1.0,
+                ),
+              ),
+              child: Center(
               child: isRouting
                   ? const SizedBox(
                       width: 24,
@@ -59,8 +66,9 @@ class RecenterButton extends StatelessWidget {
                     ),
             ),
           ),
-        );
-      },
+        ),
+      );
+    },
     );
   }
 }
